@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:absensi_apps/config/api.dart';
 import 'package:absensi_apps/config/app_color.dart';
 import 'package:absensi_apps/presentation/controller/c_user.dart';
+import 'package:absensi_apps/presentation/controller/c_wallet.dart';
 import 'package:absensi_apps/presentation/page/auth/login_page.dart';
 import 'package:absensi_apps/presentation/page/payment/wallet.dart';
 import 'package:d_info/d_info.dart';

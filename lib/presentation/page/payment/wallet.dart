@@ -1,18 +1,27 @@
 import 'package:absensi_apps/config/app_color.dart';
+import 'package:absensi_apps/presentation/controller/c_user.dart';
+import 'package:absensi_apps/presentation/controller/c_wallet.dart';
 import 'package:absensi_apps/presentation/page/auth/login_page.dart';
 import 'package:absensi_apps/presentation/page/homepage.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class WalletPage extends StatefulWidget {
+  const WalletPage({super.key});
+
   @override
+  // ignore: library_private_types_in_public_api
   _WalletPageState createState() => _WalletPageState();
 }
 
 class _WalletPageState extends State<WalletPage> {
   int _selectedIndex = 1;
+  bool _isLoading = false;
+  final cWallet = Get.put(Cwallet());
+  final cUser = Get.put(Cuser());
 
   // Dummy data for saldo and history
-  double saldo = 5000.0;
+  double saldo = 5000;
   List<Map<String, String>> history = [
     {
       'date': '2025-01-01',
@@ -27,13 +36,15 @@ class _WalletPageState extends State<WalletPage> {
     },
   ];
 
-  // Method to handle Top-Up action
-  void topUp() {
+  Future<void> refresh() async {
+    final userId = cUser.data.idUser ?? "";
+    await cWallet.getsaldo(userId);
+    await cWallet.getpemasukan(userId);
+    await cWallet.getpengeluaran(userId);
+
     setState(() {
-      saldo += 1000; // Add dummy top-up amount
+      _isLoading = false;
     });
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text('Top-up berhasil!')));
   }
 
   // Method to handle Transfer action
@@ -41,6 +52,12 @@ class _WalletPageState extends State<WalletPage> {
     // Implement transfer logic here
     ScaffoldMessenger.of(context)
         .showSnackBar(SnackBar(content: Text('Transfer berhasil!')));
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    refresh();
   }
 
   @override
@@ -76,7 +93,7 @@ class _WalletPageState extends State<WalletPage> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Rp. ${saldo.toStringAsFixed(2)}',
+                          'Rp. ${cWallet.saldo}',
                           style: const TextStyle(
                               fontSize: 32,
                               color: AppColor.primary,
@@ -122,7 +139,7 @@ class _WalletPageState extends State<WalletPage> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Rp. 2.000.000',
+                          'Rp. ${cWallet.pengeluaran}',
                           style: const TextStyle(
                               fontSize: 20,
                               color: Colors.red,
@@ -139,7 +156,7 @@ class _WalletPageState extends State<WalletPage> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Padding(
-                    padding: EdgeInsets.all(16.0),
+                    padding: const EdgeInsets.all(16.0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -150,7 +167,7 @@ class _WalletPageState extends State<WalletPage> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Rp. 2.000.000',
+                          'Rp. ${cWallet.pemasukan}',
                           style: const TextStyle(
                               fontSize: 20,
                               color: Colors.green,
@@ -164,9 +181,9 @@ class _WalletPageState extends State<WalletPage> {
             ),
 
             // History Section
-            Text('History',
+            const Text('History',
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             Container(
               padding: EdgeInsets.only(bottom: 20),
               decoration: BoxDecoration(
@@ -206,7 +223,7 @@ class _WalletPageState extends State<WalletPage> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
-          borderRadius: BorderRadius.only(
+          borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(
                 30), // Membuat sudut atas bulat untuk gaya yang lebih lembut
             topRight: Radius.circular(30),
