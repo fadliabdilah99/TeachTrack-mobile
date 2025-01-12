@@ -1,8 +1,11 @@
 import 'package:absensi_apps/config/app_color.dart';
+import 'package:absensi_apps/config/app_format.dart';
+import 'package:absensi_apps/data/model/wallet.dart';
 import 'package:absensi_apps/presentation/controller/c_user.dart';
 import 'package:absensi_apps/presentation/controller/c_wallet.dart';
 import 'package:absensi_apps/presentation/page/auth/login_page.dart';
 import 'package:absensi_apps/presentation/page/homepage.dart';
+import 'package:d_view/d_view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -19,6 +22,12 @@ class _WalletPageState extends State<WalletPage> {
   bool _isLoading = false;
   final cWallet = Get.put(Cwallet());
   final cUser = Get.put(Cuser());
+
+  bool showDetails = false;
+  int selectedHistoryIndex = -1;
+
+  final controllerIdHistory = TextEditingController();
+  final formKey = GlobalKey<FormState>();
 
   // Dummy data for saldo and history
   double saldo = 5000;
@@ -41,6 +50,9 @@ class _WalletPageState extends State<WalletPage> {
     await cWallet.getsaldo(userId);
     await cWallet.getpemasukan(userId);
     await cWallet.getpengeluaran(userId);
+   await cWallet.getList(
+      userId,
+    );
 
     setState(() {
       _isLoading = false;
@@ -179,177 +191,97 @@ class _WalletPageState extends State<WalletPage> {
                 ),
               ],
             ),
-
             // History Section
             const Text('History',
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             const SizedBox(height: 10),
-            Container(
-              padding: EdgeInsets.only(bottom: 20),
-              decoration: BoxDecoration(
-                color: Colors.grey[100],
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: ListView.builder(
-                shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                itemCount: history.length,
-                itemBuilder: (context, index) {
-                  return Card(
-                    elevation: 4,
-                    margin: EdgeInsets.only(top: 10),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10)),
-                    child: ListTile(
-                      title: Text(history[index]['description']!),
-                      subtitle: Text('Tanggal: ${history[index]['date']}'),
-                      trailing: Text('Rp. ${history[index]['amount']}'),
-                    ),
-                  );
-                },
-              ),
+           GetBuilder<Cwallet>(
+              builder: (_) {
+                if (_.loading) return DView.loadingCircle();
+                if (_.list.isEmpty) return DView.empty('KOSONGG');
+                return RefreshIndicator(
+                  onRefresh: () async => refresh(),
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: _.list.length,
+                    itemBuilder: (context, index) {
+                      Wallet wallet = _.list[index];
+                      return Column(
+                        children: [
+                          Card(
+                            margin: const EdgeInsets.all(10.0),
+                            elevation: 5.0,
+                            child: InkWell(
+                              onTap: () {
+                                setState(() {
+                                  showDetails = !showDetails;
+                                  selectedHistoryIndex = index;
+                                  controllerIdHistory.text = wallet.id.toString()!;
+                                });
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.all(10.0),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        (wallet.jenis == 'uang keluar')
+                                            ? const Icon(Icons.arrow_drop_down,
+                                                color: Colors.green)
+                                            : const Icon(Icons.arrow_drop_up,
+                                                color: Colors.red),
+                                        const SizedBox(width: 10.0),
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              wallet.jenis!,
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 17,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                    Column(
+                                      children: [
+                                        (wallet.jenis == 'uang masuk')
+                                            ? Text(
+                                                '+ ${AppFormat.currency(wallet.nominal.toString()!)}',
+                                                style: const TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.green,
+                                                ),
+                                              )
+                                            : Text(
+                                                '- ${AppFormat.currency(wallet.nominal.toString()!)}',
+                                                style: const TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.red,
+                                                ),
+                                              ),
+                                        Text(wallet.jenis!),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                );
+              },
             ),
           ],
         ),
-      ),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              AppColor.primary
-                  .withOpacity(0.7), // Gradasi halus untuk latar belakang
-              AppColor.primary.withOpacity(0.9),
-            ],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(
-                30), // Membuat sudut atas bulat untuk gaya yang lebih lembut
-            topRight: Radius.circular(30),
-          ),
-        ),
-        child: BottomNavigationBar(
-          items: [
-            BottomNavigationBarItem(
-              icon: Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: _selectedIndex == 0
-                      ? AppColor.chart
-                      : Colors.transparent, // Efek perubahan warna saat dipilih
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    if (_selectedIndex == 0)
-                      BoxShadow(
-                        color: const Color.fromARGB(255, 216, 216, 216)
-                            .withOpacity(0.5),
-                        spreadRadius: 2,
-                        blurRadius: 10,
-                        offset: Offset(0, 4),
-                      )
-                  ],
-                ),
-                child: const Icon(
-                  Icons.home_sharp,
-                  color: Colors.white,
-                  size: 35,
-                ),
-              ),
-              label: 'Home',
-            ),
-            BottomNavigationBarItem(
-              icon: Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: _selectedIndex == 1
-                      ? Colors.greenAccent
-                      : Colors.transparent,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    if (_selectedIndex == 1)
-                      BoxShadow(
-                        color: Colors.greenAccent.withOpacity(0.5),
-                        spreadRadius: 5,
-                        blurRadius: 10,
-                        offset: Offset(0, 4),
-                      )
-                  ],
-                ),
-                child: const Icon(
-                  Icons.account_balance_wallet_outlined,
-                  color: Colors.white,
-                  size: 35,
-                ),
-              ),
-              label: 'Wallet',
-            ),
-            BottomNavigationBarItem(
-              icon: Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: _selectedIndex == 2
-                      ? Colors.purpleAccent
-                      : Colors.transparent,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    if (_selectedIndex == 2)
-                      BoxShadow(
-                        color: Colors.purpleAccent.withOpacity(0.5),
-                        spreadRadius: 5,
-                        blurRadius: 10,
-                        offset: Offset(0, 4),
-                      )
-                  ],
-                ),
-                child: const Icon(
-                  Icons.shopping_bag_rounded,
-                  color: Colors.white,
-                  size: 35,
-                ),
-              ),
-              label: 'shop',
-            ),
-          ],
-          backgroundColor: Colors.transparent,
-          selectedItemColor: Colors.white,
-          unselectedItemColor: Colors.white60,
-          currentIndex: _selectedIndex,
-          onTap: _onItemTapped,
-          type: BottomNavigationBarType.fixed,
-          elevation:
-              12, // Menambahkan bayangan lebih dalam pada BottomNavigationBar
-          showUnselectedLabels:
-              true, // Menampilkan label pada item yang tidak dipilih
-        ),
-      ),
-    );
-  }
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-
-      switch (_selectedIndex) {
-        case 0:
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => ProfilePage(),
-            ),
-          );
-          break;
-        case 1:
-          break;
-        case 2:
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => LoginPage(),
-            ),
-          );
-          break;
-      }
-    });
+      ),  );
   }
 }

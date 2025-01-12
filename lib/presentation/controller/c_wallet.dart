@@ -1,3 +1,4 @@
+import 'package:absensi_apps/data/model/wallet.dart';
 import 'package:absensi_apps/data/source/source_wallet.dart';
 import 'package:get/get.dart';
 
@@ -11,6 +12,9 @@ class Cwallet extends GetxController {
   String get pengeluaran => _pengeluaran.value;
   final _pemasukan = ''.obs;
   String get pemasukan => _pemasukan.value;
+
+  final _list = <Wallet>[].obs;
+  List<Wallet> get list => _list;
 
   Future<void> getsaldo(String idUser) async {
     _loading.value = true;
@@ -58,5 +62,18 @@ class Cwallet extends GetxController {
 
     _loading.value = false;
     update();
+  }
+
+  getList(idUSer) async {
+    _loading.value = true;
+    update();
+
+    _list.value = await SourceWallet.history(idUSer);
+    update();
+
+    Future.delayed(const Duration(milliseconds: 900), () {
+      _loading.value = false;
+      update();
+    });
   }
 }
