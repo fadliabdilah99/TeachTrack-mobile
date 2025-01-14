@@ -1,6 +1,7 @@
 import 'package:absensi_apps/config/api.dart';
 import 'package:absensi_apps/config/app_request.dart';
 import 'package:absensi_apps/data/model/wallet.dart';
+import 'package:flutter/material.dart';
 
 class SourceWallet {
   static Future<Map> getsaldo(String idUser) async {
@@ -39,6 +40,8 @@ class SourceWallet {
       'id_user': idUser,
     });
 
+    print(responseBody);
+
     if (responseBody == null) return [];
 
     if (responseBody['success']) {
@@ -53,5 +56,34 @@ class SourceWallet {
     }
 
     return [];
+  }
+
+  static Future<bool> transfer(
+    String id,
+    String nis,
+    String total,
+    String keterangan,
+    BuildContext context,
+  ) async {
+    String url = '${Api.wallet}/transfer';
+    Map? responseBody = await AppRequest.post(url, {
+      'id_user': id,
+      'nis': nis,
+      'total': total,
+      'details': keterangan,
+    });
+
+    if (responseBody == null) return false;
+
+    // if (responseBody['success']) {
+    //   DInfo.dialogSuccess(context, 'Berhasil menambahkan data');
+    //   DInfo.closeDialog(context);
+    //   Get.off(HomePage());
+    //   // Navigator.pop(context);
+    // } else {
+    //   DInfo.dialogError(context, 'gagal menambah data');
+    // }
+
+    return responseBody['success'];
   }
 }

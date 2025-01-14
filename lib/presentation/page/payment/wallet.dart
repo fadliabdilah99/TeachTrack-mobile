@@ -5,6 +5,7 @@ import 'package:absensi_apps/presentation/controller/c_user.dart';
 import 'package:absensi_apps/presentation/controller/c_wallet.dart';
 import 'package:absensi_apps/presentation/page/auth/login_page.dart';
 import 'package:absensi_apps/presentation/page/homepage.dart';
+import 'package:absensi_apps/presentation/page/payment/transfer.dart';
 import 'package:d_view/d_view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -50,7 +51,7 @@ class _WalletPageState extends State<WalletPage> {
     await cWallet.getsaldo(userId);
     await cWallet.getpemasukan(userId);
     await cWallet.getpengeluaran(userId);
-   await cWallet.getList(
+    await cWallet.getList(
       userId,
     );
 
@@ -113,19 +114,37 @@ class _WalletPageState extends State<WalletPage> {
                         ),
                       ],
                     ),
-                    ElevatedButton(
-                      onPressed: transfer,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColor.primary,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                    // ElevatedButton(
+                    //   onPressed: transfer,
+                    //   style: ElevatedButton.styleFrom(
+                    //     backgroundColor: AppColor.primary,
+                    //     shape: RoundedRectangleBorder(
+                    //       borderRadius: BorderRadius.circular(10),
+                    //     ),
+                    //   ),
+                    //   child: const Text(
+                    //     'Transfer',
+                    //     style: TextStyle(color: Colors.white),
+                    //   ),
+                    // ),
+                    TextButton.icon(
+                      onPressed: () {
+                        Get.to(Transfer());
+                      },
+                      icon: const Icon(Icons.transfer_within_a_station),
+                      label: const Text('Transfer'),
+                      style: ButtonStyle(
+                        backgroundColor: MaterialStateProperty.all<Color>(
+                          AppColor.primary,
+                        ),
+                        shape:
+                            MaterialStateProperty.all<RoundedRectangleBorder>(
+                          RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
                         ),
                       ),
-                      child: const Text(
-                        'Transfer',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
+                    )
                   ],
                 ),
               ),
@@ -195,7 +214,7 @@ class _WalletPageState extends State<WalletPage> {
             const Text('History',
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             const SizedBox(height: 10),
-           GetBuilder<Cwallet>(
+            GetBuilder<Cwallet>(
               builder: (_) {
                 if (_.loading) return DView.loadingCircle();
                 if (_.list.isEmpty) return DView.empty('KOSONGG');
@@ -216,7 +235,8 @@ class _WalletPageState extends State<WalletPage> {
                                 setState(() {
                                   showDetails = !showDetails;
                                   selectedHistoryIndex = index;
-                                  controllerIdHistory.text = wallet.id.toString()!;
+                                  controllerIdHistory.text =
+                                      wallet.id.toString()!;
                                 });
                               },
                               child: Padding(
@@ -282,6 +302,7 @@ class _WalletPageState extends State<WalletPage> {
             ),
           ],
         ),
-      ),  );
+      ),
+    );
   }
 }

@@ -452,7 +452,8 @@ class _ProfilePageState extends State<ProfilePage> {
                   boxShadow: [
                     if (_selectedIndex == 0)
                       BoxShadow(
-                        color: const Color.fromARGB(255, 216, 216, 216).withOpacity(0.5),
+                        color: const Color.fromARGB(255, 216, 216, 216)
+                            .withOpacity(0.5),
                         spreadRadius: 2,
                         blurRadius: 10,
                         offset: Offset(0, 4),
@@ -546,7 +547,7 @@ class _ProfilePageState extends State<ProfilePage> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) =>  WalletPage(),
+              builder: (context) => WalletPage(),
             ),
           );
           break;
@@ -554,7 +555,7 @@ class _ProfilePageState extends State<ProfilePage> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) =>  LoginPage(),
+              builder: (context) => LoginPage(),
             ),
           );
           break;
